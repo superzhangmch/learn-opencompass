@@ -15,7 +15,11 @@ from opencompass.utils import build_dataset_from_cfg, build_model_from_cfg
 from opencompass.utils.logging import get_logger
 
 
-def extract_dicts(data):
+def extract_dicts(data): 
+    '''
+    多轮评估的时候，把每一轮的 model output 收集起来
+    data 由多个多轮组成。data内单个元素是一个多轮评估
+    '''
     max_round_num = max(len(sublist) for sublist in data)
     predictions = [[] for _ in range(max_round_num)]
     for sublist in data:
@@ -23,7 +27,7 @@ def extract_dicts(data):
             predictions[i].append(d.get('assistant'))
         for j in range(i + 1, max_round_num):
             predictions[j].append(None)
-    return predictions
+    return predictions # predictions[i] 放的是第 i 轮的 model 输出
 
 
 def order_preds_and_record_references(
@@ -167,7 +171,7 @@ class LMEvaluator:
     ) -> Dict:
         dup_indices = []
         if isinstance(predictions, list):
-            """Apply to multi-model comparison."""
+            """Apply to multi-model comparison.""" # 同时对多个 model 评估
             if references is None:
                 references = [
                     {} for _ in range(len(predictions[0]['model_preds']))
@@ -204,7 +208,7 @@ class LMEvaluator:
                         dup_indices.append(i)
 
         elif isinstance(predictions, dict):
-            """Apply to single-model scoring."""
+            """Apply to single-model scoring.""" # 只评估一个
             if references is None:
                 references = [
                     {} for _ in range(len(predictions[0]['model_preds']))
@@ -222,7 +226,7 @@ class LMEvaluator:
                 del references[index]
 
         pred_dict = {}
-        if isinstance(predictions[0][0], str):
+        if isinstance(predictions[0][0], str): ### 单轮
             # single chat for format like [['xxx', 'xxxx'], ['xxx', 'xxxx']]
             for i in range(len(predictions)):
                 key = 'prediction' if i == 0 else f'prediction{i + 1}'
@@ -242,19 +246,19 @@ class LMEvaluator:
                     for j in range(len(references)):
                         references[j]['judge_model' +
                                       str(i + 1)] = judgements[i]['model_name']
-        elif isinstance(predictions[0][0], list):
+        elif isinstance(predictions[0][0], list): # 多轮评估
             # multi round for format like [[[{'round':1, 'user':'', 'assistant':''}, {'round':2, 'user':'', 'assistant':''}], [{'round':1, 'user':'', 'assistant':''}, {'round':2, 'user':'', 'assistant':''}]]]
-            if self.pack_all_predictions:
+            if self.pack_all_predictions: # 不对多轮拆成单轮
                 for i in range(len(predictions)):
                     key = 'prediction' if i == 0 else f'prediction{i + 1}'
                     predictions[i] = [
-                        str(_) for _ in predictions[i]
+                        str(_) for _ in predictions[i] # 仅仅是转成了str(), 也就是本来是dict等结构，现在转成字符串了
                     ]  # Fix the dictionary order to prevent the following situations: {'assistant':'', 'round':2, 'user':''}
                     pred_dict[key] = predictions[i]
-            else:
-                for i in range(len(predictions)):
+            else: # 把多轮拆开单轮评
+                for i in range(len(predictions)): # 因为可能是要评多个模型，所以 predictions[i] 对应的是一个 model
                     multiround_predictions = extract_dicts(predictions[i])
-                    for j in range(len(multiround_predictions)):
+                    for j in range(len(multiround_predictions)): # j 是所有multi-round 的第j轮model 结果
                         key = 'prediction' if i == 0 else f'prediction{i}'
                         key += '_r' + str(j + 1)
                         pred_dict[key] = multiround_predictions[j]
