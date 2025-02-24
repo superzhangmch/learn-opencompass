@@ -1,7 +1,7 @@
 # flake8: noqa
 # yapf: disable
 
-from datasets import load_dataset
+from datasets import load_dataset ### 非 opencompass 的库
 
 from opencompass.openicl import BaseEvaluator
 from opencompass.registry import LOAD_DATASET
@@ -34,7 +34,10 @@ class MMLUProDataset(BaseDataset):
     @staticmethod
     def load(path: str, category: str):
         path = get_data_path(path)
-        mmlu_pro = load_dataset(path)
+        mmlu_pro = load_dataset(path) #  path 是个路径名。读取下面的 .parquet 文件。如果有其他无关文件，则会读取失败。
+        '''
+        mmlu_pro: 乃一个dict，key 是 dict_keys(['validation', 'test'])。类似excel的多个sheets. 
+        '''
         mmlu_pro = mmlu_pro.filter(lambda x: x['category'] == category)
         mmlu_pro = mmlu_pro.map(_parse)
         return mmlu_pro
