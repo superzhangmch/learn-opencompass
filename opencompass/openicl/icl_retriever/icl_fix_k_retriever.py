@@ -42,10 +42,10 @@ class FixKRetriever(BaseRetriever):
 
     def retrieve(self):
         """Retrieve the in-context example index for each test example."""
-        num_idx = len(self.index_ds)
+        num_idx = len(self.index_ds) # index_ds: 是用来投建 few shot 的示例数据集。
         for idx in self.fix_id_list:
             assert idx < num_idx, f'Index {idx} is out of range of {num_idx}'
         rtr_idx_list = []
-        for _ in trange(len(self.test_ds), disable=not self.is_main_process):
+        for _ in trange(len(self.test_ds), disable=not self.is_main_process): # test_ds 评测用的数据集
             rtr_idx_list.append(self.fix_id_list)
         return rtr_idx_list
