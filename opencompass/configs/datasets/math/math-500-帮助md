@@ -2,9 +2,9 @@
 - math_prm800k_500_0shot_cot_gen.py 
 - math_prm800k_500_gen.py
 - math_prm800k_500_0shot_nocot_gen_b27274.py
-- math_prm800k_500_0shot_nocot_genericllmeval_gen_63a000.py 
+- math_prm800k_500_0shot_nocot_genericllmeval_gen_63a000.py  # 中间状态文件。
 - math_prm800k_500_0shot_nocot_genericllmeval_xml_gen_63a000.py 
-- math_prm800k_500_0shot_nocot_llmjudge_gen_63a000.py 
+- math_prm800k_500_0shot_nocot_llmjudge_gen_63a000.py  # 可以用这个
 
 1. 以上都是 0-shot
 2. 评估：
