@@ -64,10 +64,10 @@ class BM25Retriever(BaseRetriever):
         """Retrieve the in-context example index for each test example."""
         rtr_idx_list = []
         logger.info('Retrieving data for test set...')
-        for idx in trange(len(self.test_corpus),
+        for idx in trange(len(self.test_corpus), # 对一个数据集，只调用一次retrieve，而不是每条数据调用一次。
                           disable=not self.is_main_process):
             query = self.test_corpus[idx]
-            scores = self.bm25.get_scores(query)
+            scores = self.bm25.get_scores(query) # 找出和当前query最接近的in-context samples
             near_ids = list(np.argsort(scores)[::-1][:self.ice_num])
             near_ids = [int(a) for a in near_ids]
             rtr_idx_list.append(near_ids)
